@@ -50,14 +50,20 @@ public class MultiThreads extends javax.swing.JFrame {
             }
         });
 
+        pgsBar1.setName("1"); // NOI18N
+
         lblBar1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblBar1.setText("Barra 1");
 
         lblBar2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblBar2.setText("Barra 2");
 
+        pgsBar2.setName("2"); // NOI18N
+
         lblBar3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblBar3.setText("Barra 3");
+
+        pgsBar3.setName("3"); // NOI18N
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -112,27 +118,26 @@ public class MultiThreads extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        runnable.start();
-        runnable2.start();
-        runnable3.start();
+       new Thread(runnable).start();
+       new Thread(runnable2).start();
+       new Thread(runnable3).start();
     }//GEN-LAST:event_btnStartActionPerformed
 
-
-    Thread runnable = new ProgressThread(){
+    Runnable runnable = new Runnable() {
         @Override
         public void run() {
             fillBar(pgsBar1);
         }
     };
 
-    Thread runnable2 = new ProgressThread(){
+    Runnable runnable2 = new Runnable() {
         @Override
         public void run() {
             fillBar(pgsBar2);
         }
     };
 
-    Thread runnable3 = new ProgressThread(){
+    Runnable runnable3 = new Runnable() {
         @Override
         public void run() {
             fillBar(pgsBar3);
@@ -140,20 +145,33 @@ public class MultiThreads extends javax.swing.JFrame {
     };
 
     private void fillBar(JProgressBar pgsBar) {
-        for (int i = 0; i <= MAXIMUM; i++) {
-            final int currentNumber = i;
-            try {
+        final int MAXIMUM = pgsBar.getMaximum();
+        if (pgsBar.getValue() <= MAXIMUM) {
+            int currentValue = pgsBar.getValue();
+            while (currentValue < MAXIMUM) {
+                int increment = (int) (Math.random() * 5); // Incremento aleatorio
+                currentValue = Math.min(currentValue + increment, MAXIMUM);
+                final int newValue = currentValue;
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        pgsBar.setValue(currentNumber);
+                        pgsBar.setValue(newValue);
                     }
                 });
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.getMessage();
+                try {
+                    Thread.sleep(100); // Espera entre actualizaciones
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+        // Imprimir en el jTextArea1 que terminó de llenar la barra
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                jTextArea1.append("Terminó el Hilo"+pgsBar.getName()+"\n");
+            }
+        });
     }
     /**
      * @param args the command line arguments
